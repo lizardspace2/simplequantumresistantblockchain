@@ -16,8 +16,10 @@ COPY wallet_manager.py .
 COPY distribute_treasury.py .
 
 # Exposer le port (sera défini par la variable d'environnement PORT)
+# Utiliser un port par défaut mais le code lit $PORT depuis l'environnement
 EXPOSE 5000
 
 # Commande pour démarrer l'application
-CMD ["python", "blockchain_node.py", "--port", "5000"]
+# Le code lit automatiquement $PORT depuis l'environnement
+CMD ["python", "blockchain_node.py"]
 

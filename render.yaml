@@ -5,8 +5,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python blockchain_node.py --port $PORT
     envVars:
-      - key: PORT
-        value: 10000
+      # PORT est défini automatiquement par Render, ne pas le définir ici
       - key: PYTHON_VERSION
         value: 3.11.5
 
