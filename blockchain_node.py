@@ -528,6 +528,37 @@ class Node:
                 'message': f'{len(transactions_created)} distributions créées'
             })
         
+        @self.app.route('/treasury/init', methods=['POST'])
+        def init_treasury():
+            """Initialiser le trésor avec des tokens (une seule fois)"""
+            if not self.blockchain.treasury_address:
+                return jsonify({'success': False, 'error': 'Pas de trésor configuré'}), 400
+            
+            # Vérifier si le trésor a déjà des tokens
+            current_balance = self.blockchain.get_balance(self.blockchain.treasury_address)
+            if current_balance > 0:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Le trésor est déjà initialisé',
+                    'current_balance': current_balance
+                }), 400
+            
+            data = request.get_json()
+            amount = float(data.get('amount', 1000000))  # 1 million par défaut
+            
+            # Mint des tokens au trésor
+            self.blockchain.mint_tokens(self.blockchain.treasury_address, amount)
+            
+            # Créer un bloc pour valider la transaction
+            self.blockchain.create_block()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Trésor initialisé avec {amount} tokens',
+                'treasury_address': self.blockchain.treasury_address,
+                'balance': self.blockchain.get_balance(self.blockchain.treasury_address)
+            })
+        
         @self.app.route('/peers', methods=['GET'])
         def get_peers():
             return jsonify({'peers': self.peers})
@@ -597,7 +628,8 @@ def main():
     INACTIVITY_THRESHOLD = args.inactivity_days * 24 * 3600
     
     # Créer le trésor si demandé
-    treasury_address = args.treasury
+    # Le trésor peut venir de l'argument --treasury ou de la variable d'environnement TREASURY_ADDRESS
+    treasury_address = args.treasury or os.environ.get('TREASURY_ADDRESS')
     
     if args.init and not treasury_address:
         # Créer automatiquement le trésor
@@ -614,6 +646,17 @@ def main():
         print(f"Clé privée sauvegardée dans: {treasury_file}\n")
     
     node = Node(args.port, treasury_address)
+    
+    # Initialiser automatiquement le trésor s'il est configuré mais vide
+    if treasury_address and not args.init:
+        treasury_balance = node.blockchain.get_balance(treasury_address)
+        if treasury_balance == 0:
+            # Initialiser avec 1 million de tokens par défaut
+            initial_amount = float(os.environ.get('TREASURY_INITIAL_AMOUNT', 1000000))
+            node.blockchain.mint_tokens(treasury_address, initial_amount)
+            node.blockchain.create_block()
+            print(f"\n🏛️  Trésor initialisé automatiquement avec {initial_amount} tokens")
+            print(f"Adresse: {treasury_address}\n")
     
     if args.init:
         print("Initialisation avec données de test...")
