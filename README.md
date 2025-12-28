@@ -1701,9 +1701,9 @@ Avant de déployer, assurez-vous que :
 - **Start Command** : `python blockchain_node.py --port $PORT`
 - **Plan** : **Free**
 
-**Variables d'environnement (optionnel) :**
+**Variables d'environnement :**
 - `PORT` : Laissé vide (Render le définit automatiquement)
-- `TREASURY_ADDRESS` : Votre adresse trésor (si vous en avez une)
+- ⚠️ **Note importante** : L'adresse du trésor est maintenant codée directement dans le code. Vous n'avez **PAS besoin** de définir `TREASURY_ADDRESS` - elle est automatique !
 
 #### Étape 4 : Déployer
 
@@ -2106,18 +2106,23 @@ Quand vous déployez dans le cloud :
 
 ### 📝 Variables d'environnement recommandées
 
-Créez un fichier `.env` (et ajoutez-le au `.gitignore`) :
+**✅ BONNE NOUVELLE :** L'adresse du trésor est maintenant **codée directement dans le code** !
+
+Vous n'avez **PAS besoin** de définir `TREASURY_ADDRESS` - tous les nœuds utilisent automatiquement la même adresse officielle pour garantir la cohérence du réseau.
+
+Si vous voulez créer un fichier `.env` (et l'ajouter au `.gitignore`) :
 
 ```bash
 # Port (défini automatiquement par la plateforme)
 PORT=5000
 
-# Adresse du trésor (optionnel)
-TREASURY_ADDRESS=Q1234567890abcdef...
-
 # Configuration d'inactivité (optionnel)
 INACTIVITY_DAYS=30
+
+# ⚠️ TREASURY_ADDRESS n'est plus nécessaire - elle est automatique !
 ```
+
+**Pour plus de détails sur ce changement, consultez [CHANGELOG_TREASURY.md](CHANGELOG_TREASURY.md)**
 
 ### 🐛 Dépannage du déploiement cloud
 

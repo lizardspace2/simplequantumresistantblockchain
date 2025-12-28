@@ -28,15 +28,22 @@ Ce guide vous explique comment déployer un deuxième nœud blockchain et le con
 - **Start Command** : `python blockchain_node.py --port $PORT`
 - **Plan** : **Free** (gratuit)
 
-**Variables d'environnement (optionnel mais recommandé) :**
+**Variables d'environnement :**
 
-Si vous voulez que les deux nœuds partagent le même trésor, ajoutez :
-- **Key** : `TREASURY_ADDRESS`
-- **Value** : `Qbd7901a83d578aabe02710c57540c19242a3941d178bed` (l'adresse de votre trésor)
+**✅ BONNE NOUVELLE :** L'adresse du trésor est maintenant **codée directement dans le code** !
 
-**⚠️ Important :** 
+- **Vous n'avez PAS besoin** de définir `TREASURY_ADDRESS` - elle est automatique
+- Tous les nœuds utilisent automatiquement la même adresse officielle : `Qbd7901a83d578aabe02710c57540c19242a3941d178bed`
+- Cela garantit que tous les nœuds sont compatibles avec le réseau
+
+**⚠️ Si vous définissez TREASURY_ADDRESS avec une valeur différente :**
+- Votre nœud ne sera PAS compatible avec le réseau officiel
+- Un avertissement sera affiché au démarrage
+- Les autres nœuds rejetteront vos transactions de trésor
+
+**⚠️ Autres notes importantes :** 
 - Ne définissez PAS la variable `PORT` - Render la définit automatiquement
-- Si vous utilisez le même trésor, les deux nœuds partageront la même blockchain
+- Tous les nœuds partagent automatiquement la même blockchain grâce au trésor officiel
 
 ### Étape 3 : Déployer
 
@@ -86,7 +93,31 @@ curl -X POST "$NODE1_URL/peers/add" \
   -d "{\"peer\": \"$NODE2_URL\"}"
 ```
 
-### Étape 5 : Vérifier la connexion
+### Étape 5 : Vérifier la configuration du trésor
+
+**⚠️ IMPORTANT :** Vérifiez que les deux nœuds ont le bon `TREASURY_ADDRESS` configuré :
+
+**Option A : Utiliser le script de vérification (Recommandé)**
+```bash
+python verify_treasury.py \
+  https://blockchain-node-uu6y.onrender.com \
+  https://blockchain-node-2.onrender.com
+```
+
+**Option B : Vérifier manuellement**
+```bash
+# Vérifier le trésor du nœud 1
+curl https://blockchain-node-uu6y.onrender.com/blockchain/status | jq .treasury
+
+# Vérifier le trésor du nœud 2
+curl https://blockchain-node-2.onrender.com/blockchain/status | jq .treasury
+```
+
+**Réponse attendue :** `"Qbd7901a83d578aabe02710c57540c19242a3941d178bed"`
+
+Si vous voyez `null`, le nœud n'a pas `TREASURY_ADDRESS` configuré. Consultez [TREASURY_ADDRESS_IMPORTANCE.md](TREASURY_ADDRESS_IMPORTANCE.md) pour savoir comment corriger.
+
+### Étape 6 : Vérifier la connexion
 
 **Vérifier les peers du nœud 1 :**
 ```bash
@@ -107,7 +138,7 @@ curl https://blockchain-node-2.onrender.com/peers
 }
 ```
 
-### Étape 6 : Synchroniser la blockchain
+### Étape 7 : Synchroniser la blockchain
 
 Si votre premier nœud a déjà des blocs, synchronisez le deuxième nœud :
 

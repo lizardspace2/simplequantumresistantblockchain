@@ -6,7 +6,14 @@ Installation:
     pip install flask requests
 
 Utilisation:
-    python blockchain_node.py --port 5000 --treasury <adresse>
+    python blockchain_node.py --port 5000
+
+Note:
+    L'adresse du trésor est définie par défaut dans le code pour garantir
+    la cohérence du réseau. Tous les nœuds utilisent automatiquement la même
+    adresse de trésor officielle.
+    
+    Pour rejoindre le réseau officiel, ne pas spécifier --treasury ou TREASURY_ADDRESS.
 """
 
 import hashlib
@@ -26,6 +33,15 @@ import requests
 
 # Temps d'inactivité avant de commencer à perdre des coins (en secondes)
 INACTIVITY_THRESHOLD = 30 * 24 * 3600  # 30 jours par défaut
+
+# ============================================================================
+# CONFIGURATION DU TRÉSOR (ADRESSE OFFICIELLE DE LA BLOCKCHAIN)
+# ============================================================================
+
+# ⚠️ ADRESSE DU TRÉSOR OFFICIELLE - NE PAS MODIFIER
+# Cette adresse est utilisée par tous les nœuds du réseau pour garantir la cohérence.
+# Si vous modifiez cette adresse, votre nœud ne sera pas compatible avec le réseau.
+DEFAULT_TREASURY_ADDRESS = "Qbd7901a83d578aabe02710c57540c19242a3941d178bed"
 
 # ============================================================================
 # CORE BLOCKCHAIN
@@ -627,25 +643,56 @@ def main():
     global INACTIVITY_THRESHOLD
     INACTIVITY_THRESHOLD = args.inactivity_days * 24 * 3600
     
-    # Créer le trésor si demandé
-    # Le trésor peut venir de l'argument --treasury ou de la variable d'environnement TREASURY_ADDRESS
-    treasury_address = args.treasury or os.environ.get('TREASURY_ADDRESS')
+    # Configuration du trésor
+    # L'adresse du trésor est définie par défaut dans le code pour garantir la cohérence du réseau
+    # Elle peut être surchargée via --treasury ou TREASURY_ADDRESS, mais ce n'est PAS recommandé
+    treasury_address = args.treasury or os.environ.get('TREASURY_ADDRESS') or DEFAULT_TREASURY_ADDRESS
     
-    if args.init and not treasury_address:
-        # Créer automatiquement le trésor
-        treasury_wallet = QuantumAddress()
-        treasury_address = treasury_wallet.address
-        
-        # Sauvegarder le wallet du trésor
-        treasury_file = f"treasury_node_{args.port}.json"
-        with open(treasury_file, 'w') as f:
-            json.dump(treasury_wallet.to_dict(), f, indent=2)
-        
-        print(f"\n🏛️  Trésor créé automatiquement")
-        print(f"Adresse: {treasury_address}")
-        print(f"Clé privée sauvegardée dans: {treasury_file}\n")
+    # Avertir si l'utilisateur essaie de changer l'adresse du trésor
+    if args.treasury and args.treasury != DEFAULT_TREASURY_ADDRESS:
+        print(f"\n{'='*70}")
+        print("⚠️  ATTENTION : ADRESSE DE TRÉSOR PERSONNALISÉE")
+        print(f"{'='*70}")
+        print(f"Vous utilisez une adresse de trésor différente de l'adresse officielle.")
+        print(f"Adresse officielle : {DEFAULT_TREASURY_ADDRESS}")
+        print(f"Adresse utilisée   : {args.treasury}")
+        print(f"\n⚠️  Votre nœud ne sera PAS compatible avec le réseau officiel !")
+        print(f"⚠️  Les autres nœuds rejetteront vos transactions de trésor.")
+        print(f"{'='*70}\n")
+    elif os.environ.get('TREASURY_ADDRESS') and os.environ.get('TREASURY_ADDRESS') != DEFAULT_TREASURY_ADDRESS:
+        print(f"\n{'='*70}")
+        print("⚠️  ATTENTION : ADRESSE DE TRÉSOR PERSONNALISÉE")
+        print(f"{'='*70}")
+        print(f"Vous utilisez une adresse de trésor différente de l'adresse officielle.")
+        print(f"Adresse officielle : {DEFAULT_TREASURY_ADDRESS}")
+        print(f"Adresse utilisée   : {os.environ.get('TREASURY_ADDRESS')}")
+        print(f"\n⚠️  Votre nœud ne sera PAS compatible avec le réseau officiel !")
+        print(f"⚠️  Les autres nœuds rejetteront vos transactions de trésor.")
+        print(f"{'='*70}\n")
+    
+    if args.init and treasury_address == DEFAULT_TREASURY_ADDRESS:
+        # ⚠️ ATTENTION : --init ne devrait pas être utilisé avec l'adresse officielle
+        # L'adresse officielle du trésor est déjà définie dans le code
+        # Si vous voulez créer un nouveau trésor pour tester, utilisez une adresse différente
+        print(f"\n{'='*70}")
+        print("⚠️  ATTENTION : MODE INIT AVEC TRÉSOR OFFICIEL")
+        print(f"{'='*70}")
+        print(f"Vous utilisez --init avec l'adresse officielle du trésor.")
+        print(f"L'adresse officielle est : {DEFAULT_TREASURY_ADDRESS}")
+        print(f"\n⚠️  Ce mode est destiné aux tests locaux uniquement.")
+        print(f"⚠️  Pour rejoindre le réseau officiel, ne pas utiliser --init.")
+        print(f"{'='*70}\n")
     
     node = Node(args.port, treasury_address)
+    
+    # Afficher l'adresse du trésor utilisée
+    if treasury_address == DEFAULT_TREASURY_ADDRESS:
+        print(f"\n{'='*70}")
+        print("🏛️  TRÉSOR OFFICIEL CONFIGURÉ")
+        print(f"{'='*70}")
+        print(f"Adresse : {treasury_address}")
+        print(f"✅ Votre nœud est compatible avec le réseau officiel")
+        print(f"{'='*70}\n")
     
     # Initialiser automatiquement le trésor s'il est configuré mais vide
     if treasury_address and not args.init:
