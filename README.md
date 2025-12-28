@@ -1411,7 +1411,23 @@ curl -X POST http://localhost:5000/treasury/distribute \
 
 ## 🌍 Créer un réseau multi-nœuds
 
-### Scénario : 3 nœuds connectés
+### 📘 Guide de déploiement d'un deuxième nœud
+
+**Pour déployer un deuxième nœud sur Render ou une autre plateforme cloud, consultez le guide détaillé :**
+👉 **[DEPLOY_SECOND_NODE.md](DEPLOY_SECOND_NODE.md)**
+
+Ce guide vous explique comment :
+- Déployer un deuxième nœud sur Render, Railway, ou Fly.io
+- Connecter les nœuds ensemble
+- Synchroniser la blockchain entre les nœuds
+- Tester votre réseau multi-nœuds
+
+**Script automatique de connexion :**
+```bash
+python connect_nodes.py <url_node1> <url_node2>
+```
+
+### Scénario : 3 nœuds connectés (local)
 
 #### Étape 1 : Lancer le nœud principal
 
@@ -1435,6 +1451,14 @@ python blockchain_node.py --port 5002
 ```
 
 #### Étape 4 : Connecter les nœuds
+
+**Option A : Utiliser le script automatique**
+```bash
+python connect_nodes.py http://localhost:5000 http://localhost:5001
+python connect_nodes.py http://localhost:5000 http://localhost:5002
+```
+
+**Option B : Connecter manuellement**
 
 **Connecter le nœud 2 au nœud 1 :**
 

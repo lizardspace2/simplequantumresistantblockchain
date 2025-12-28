@@ -260,7 +260,8 @@ Une fois votre nœud déployé :
 2. ✅ Créez des wallets
 3. ✅ Effectuez des transactions
 4. ✅ Enregistrez des validateurs
-5. ✅ Connectez d'autres nœuds (peers)
+5. ✅ **Déployez un deuxième nœud** : Consultez [DEPLOY_SECOND_NODE.md](DEPLOY_SECOND_NODE.md)
+6. ✅ Connectez d'autres nœuds (peers)
 
 Pour plus de détails, consultez le [README.md](README.md) complet.
 
